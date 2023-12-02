@@ -37,6 +37,7 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
   const [showComments, setShowComments] = useState(false);
   const [text, setText] = useState("");
   const [commentState, setCommentState] = useState("New");
+  const [currentComment, setCurrentComment] = useState("");
   const token = useSelector(getUserToken);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -77,12 +78,38 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
     return "Comment added successfully";
   };
 
+  const mutationFnEdit = async (data: AddComment): Promise<string> => {
+    await httpRequest.put(
+      `/comments/${currentComment}`,
+      { message: data.message, book_id: data.book_id },
+      authHeaders
+    );
+    return "Comment updated successfully";
+  };
+
   type AddComment = {
     message: string;
     book_id: string;
   };
+
   const mutation = useMutation<string, Error, AddComment, unknown>({
     mutationFn,
+    onSuccess: (data: string) => {
+      toast.dismiss();
+      successToast(data);
+      queryClient.invalidateQueries({
+        queries: [`comment-${bookId}`],
+      } as InvalidateQueryFilters);
+    },
+    onError: (err: any) => {
+      toast.dismiss();
+      errorToast("Something went wrong");
+      console.log("ERROR", err);
+    },
+  });
+
+  const editMutation = useMutation<string, Error, AddComment, unknown>({
+    mutationFn: mutationFnEdit,
     onSuccess: (data: string) => {
       toast.dismiss();
       successToast(data);
@@ -107,7 +134,15 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
     setText("");
   };
 
-  const editComment = () => {};
+  const editComment = () => {
+    if (!text) return errorToast("Please add your comment");
+    toast.loading("Updating comment...");
+    editMutation.mutateAsync({
+      message: text,
+      book_id: bookId || "",
+    });
+    setText("");
+  };
 
   const redirect = () => {
     dispatch(SAVE_URL(pathname));
@@ -198,6 +233,11 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
                           <MdOutlineEditNote
                             size={25}
                             className={styles.edit}
+                            onClick={() => {
+                              setCurrentComment(comment.id);
+                              console.log("userid", comment.user_id);
+                              console.log("curr user id", currentUser?.id);
+                            }}
                           />
                         </span>
                         <span>

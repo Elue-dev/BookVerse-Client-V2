@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { CLOSE_MODAL } from "../../redux/slices/modal.slice";
 import { httpRequest } from "../../services/httpRequest";
 import { Book } from "../../types/books";
+import { InfinitySpin } from "react-loader-spinner";
 
 export default function Featured() {
   const dispatch = useDispatch();
@@ -53,7 +54,12 @@ export default function Featured() {
       <h2>FEATURED BOOKS</h2>
       <section className={styles["featured__books"]}>
         {isLoading ? (
-          <div className="loading">LOADING...</div>
+          <>
+            <div className="loading">
+              <InfinitySpin width="200" color="#4fa94d" />
+              <h3>GETTING BOOKS...</h3>
+            </div>
+          </>
         ) : (
           <>
             {books?.length === 0 ||

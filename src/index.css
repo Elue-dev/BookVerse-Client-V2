@@ -33,6 +33,7 @@ footer {
   position: absolute;
   text-align: center;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 100%;
