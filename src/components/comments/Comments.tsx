@@ -30,6 +30,7 @@ import { User } from "../../types/user";
 
 import moment from "moment";
 import Notiflix from "notiflix";
+import { Comment as CommentLoader } from "react-loader-spinner";
 
 export default function Comments({ bookId }: { bookId: string | undefined }) {
   const currentUser: User | null = useSelector<RootState, User | null>(
@@ -63,6 +64,7 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
     isLoading,
     error,
     data: comments,
+    refetch,
   } = useQuery<Comment[], Error>({
     queryKey: [`comment-${bookId}`],
     queryFn,
@@ -81,7 +83,7 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
 
   const mutationFnEdit = async (data: AddComment): Promise<string> => {
     await httpRequest.put(
-      `/comments/${currentCommentId}/`,
+      `/comments/${currentCommentId}`,
       { message: data.message, book_id: data.book_id },
       authHeaders
     );
@@ -128,7 +130,7 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
     },
     onError: (err: any) => {
       toast.dismiss();
-      errorToast("Something went wrong");
+      errorToast(err.response.data.message);
       console.log("ERROR", err);
     },
   });
@@ -195,9 +197,32 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
     navigate("/auth");
   };
 
-  if (isLoading) return "Loading...";
+  if (isLoading)
+    return (
+      <div>
+        <CommentLoader
+          visible={true}
+          height="80"
+          width="80"
+          ariaLabel="comment-loading"
+          wrapperStyle={{ marginTop: "1.5rem" }}
+          wrapperClass="comment-wrapper"
+          color="#fff"
+          backgroundColor="#746ab0"
+        />
+        <h3 className="loadingText">Loading comments...</h3>
+      </div>
+    );
 
-  if (error) return "Something went wrong";
+  if (error)
+    return (
+      <>
+        <h3 style={{ marginTop: "1.5rem" }}>Something went wrong 😞</h3>
+        <div onClick={() => refetch()}>
+          <span className={styles.retry}>Retry</span>
+        </div>
+      </>
+    );
 
   return (
     <section className={styles.comments}>
@@ -257,43 +282,48 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
               <>
                 {comments?.map((comment: Comment) => (
                   <div className={styles["comment__details"]} key={comment.id}>
-                    <img src={comment.user_img} alt={comment.username} />
-                    <div>
-                      <p>
-                        <b>{comment.username}</b>
-                      </p>
-                      <p className={styles.username}>{comment.message}</p>
-                    </div>
-                    <div className={styles.date}>
-                      <CiClock2 />
-                      {moment(comment.created_at).fromNow()}
-                    </div>
-                    {comment.user_id === currentUser?.id && (
+                    <div className={styles.top_sec}>
+                      <img src={comment.user_img} alt={comment.username} />
                       <div>
-                        <span
-                          onClick={() => {
-                            setText(comment.message);
-                            setCommentState("Editing");
-                          }}
-                        >
-                          <MdOutlineEditNote
-                            size={25}
-                            className={styles.edit}
-                            onClick={() => setCurrentCommentId(comment.id)}
-                          />
-                        </span>
-                        <span>
-                          <MdDeleteForever
-                            size={25}
-                            className={styles.delete}
-                            onClick={() => {
-                              setCurrentCommentId(comment.id);
-                              confirmDelete();
-                            }}
-                          />
-                        </span>
+                        <p className={styles.username}>
+                          <b>{comment.username}</b>
+                        </p>
+                        <div className={styles.msg}>
+                          <p>{comment.message}</p>
+                        </div>
                       </div>
-                    )}
+                    </div>
+
+                    <div className={styles.bottom_sec}>
+                      <div className={styles.date}>
+                        <CiClock2 />
+                        {moment(comment.created_at).fromNow()} .
+                      </div>
+                      {comment.user_id === currentUser?.id && (
+                        <div>
+                          <span
+                            onClick={() => {
+                              setText(comment.message);
+                              setCommentState("Editing");
+                            }}
+                          >
+                            <MdOutlineEditNote
+                              className={styles.edit}
+                              onClick={() => setCurrentCommentId(comment.id)}
+                            />
+                          </span>
+                          <span>
+                            <MdDeleteForever
+                              className={styles.delete}
+                              onClick={() => {
+                                setCurrentCommentId(comment.id);
+                                confirmDelete();
+                              }}
+                            />
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </>

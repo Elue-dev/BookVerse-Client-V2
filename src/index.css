@@ -43,6 +43,10 @@ footer {
   animation: opacity 0.4s infinite alternate;
 }
 
+.loadingText {
+  animation: opacity 0.4s infinite alternate;
+}
+
 .suspense {
   font-size: 1.9rem;
   display: flex;
