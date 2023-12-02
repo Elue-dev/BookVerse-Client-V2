@@ -29,6 +29,7 @@ import { RootState } from "../../redux/store";
 import { User } from "../../types/user";
 
 import moment from "moment";
+import Notiflix from "notiflix";
 
 export default function Comments({ bookId }: { bookId: string | undefined }) {
   const currentUser: User | null = useSelector<RootState, User | null>(
@@ -37,7 +38,7 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
   const [showComments, setShowComments] = useState(false);
   const [text, setText] = useState("");
   const [commentState, setCommentState] = useState("New");
-  const [currentComment, setCurrentComment] = useState("");
+  const [currentCommentId, setCurrentCommentId] = useState("");
   const token = useSelector(getUserToken);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -80,11 +81,19 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
 
   const mutationFnEdit = async (data: AddComment): Promise<string> => {
     await httpRequest.put(
-      `/comments/${currentComment}`,
+      `/comments/${currentCommentId}/`,
       { message: data.message, book_id: data.book_id },
       authHeaders
     );
     return "Comment updated successfully";
+  };
+
+  const mutationFnDelete = async (): Promise<string> => {
+    await httpRequest.delete(
+      `/comments/${currentCommentId}/${bookId}`,
+      authHeaders
+    );
+    return "Comment deleted successfully";
   };
 
   type AddComment = {
@@ -124,6 +133,22 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
     },
   });
 
+  const deleteMutation = useMutation<string, Error, null, unknown>({
+    mutationFn: mutationFnDelete,
+    onSuccess: (data: string) => {
+      toast.dismiss();
+      successToast(data);
+      queryClient.invalidateQueries({
+        queries: [`comment-${bookId}`],
+      } as InvalidateQueryFilters);
+    },
+    onError: (err: any) => {
+      toast.dismiss();
+      errorToast("Something went wrong");
+      console.log("ERROR", err);
+    },
+  });
+
   const addComment = () => {
     if (!text) return errorToast("Please add your comment");
     toast.loading("Adding comment...");
@@ -142,6 +167,27 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
       book_id: bookId || "",
     });
     setText("");
+  };
+
+  const confirmDelete = () => {
+    Notiflix.Confirm.show(
+      "Delete Comment",
+      "Are you sure you want to delete this comment?",
+      "DELETE",
+      "CLOSE",
+      function okCb() {
+        toast.loading("Deleting comment...");
+        deleteMutation.mutateAsync(null);
+      },
+      function cancelCb() {},
+      {
+        width: "320px",
+        borderRadius: "5px",
+        titleColor: "#746ab0",
+        okButtonBackground: "#746ab0",
+        cssAnimationStyle: "zoom",
+      }
+    );
   };
 
   const redirect = () => {
@@ -233,17 +279,17 @@ export default function Comments({ bookId }: { bookId: string | undefined }) {
                           <MdOutlineEditNote
                             size={25}
                             className={styles.edit}
-                            onClick={() => {
-                              setCurrentComment(comment.id);
-                              console.log("userid", comment.user_id);
-                              console.log("curr user id", currentUser?.id);
-                            }}
+                            onClick={() => setCurrentCommentId(comment.id)}
                           />
                         </span>
                         <span>
                           <MdDeleteForever
                             size={25}
                             className={styles.delete}
+                            onClick={() => {
+                              setCurrentCommentId(comment.id);
+                              confirmDelete();
+                            }}
                           />
                         </span>
                       </div>
