@@ -32,18 +32,8 @@ function App() {
   useEffect(() => {
     async function checkAuthStatus() {
       try {
-        const response = await httpRequest.post(
-          "/auth/checkAuthStatus",
-          null,
-          authHeaders
-        );
-
-        if (response.status === 200) {
-          console.log("user token still valid");
-        }
+        await httpRequest.post("/auth/checkAuthStatus", null, authHeaders);
       } catch (error: any) {
-        console.log("details", error.response.data.error_details);
-
         if (error.response.data.error_details === "token malformed") {
           dispatch(REMOVE_ACTIVE_USER());
           navigate("/auth");
