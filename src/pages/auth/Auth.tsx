@@ -5,7 +5,6 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FiLock, FiUser } from "react-icons/fi";
 import { IoMdLogIn } from "react-icons/io";
 import { TbUserPlus } from "react-icons/tb";
-import { FcAddImage } from "react-icons/fc";
 import { MdAlternateEmail } from "react-icons/md";
 import styles from "./auth.module.scss";
 import { BiBookReader } from "react-icons/bi";
@@ -30,13 +29,11 @@ const initialState = {
 export default function Auth() {
   const [values, setValues] = useState(initialState);
   const [authState, setAuthState] = useState("login");
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const passwordRef = useRef<any | undefined>();
   const emailRef = useRef<any | undefined>(null);
-  const avatarRef = useRef<any | undefined>();
+
   const nameRef = useRef<any | undefined>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -44,19 +41,11 @@ export default function Auth() {
 
   useEffect(() => {
     setValues(initialState);
-    setAvatar(null);
-    setAvatarPreview(null);
   }, [authState]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setValues({ ...values, [name]: value });
-  };
-
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    file && setAvatar(file);
-    file && setAvatarPreview(URL.createObjectURL(file));
   };
 
   const loginUser = async (e: FormEvent) => {
@@ -122,18 +111,11 @@ export default function Auth() {
       formData.append("username", values.username);
       formData.append("email", values.email);
       formData.append("password", values.password);
-      if (avatar) {
-        formData.append("avatar", avatar);
-      } else {
-        formData.append("avatar", "");
-      }
 
       const response = await httpRequest.post("/auth/signup", formData);
 
       if (response) {
         setLoading(false);
-        setAvatar(null);
-        setAvatarPreview(null);
         successToast("Account successfully created! Please Login.");
         setAuthState("login");
         setValues(initialState);
@@ -249,6 +231,8 @@ export default function Auth() {
               </div>
             </label>
 
+            <br />
+
             {/* <Link to="/auth/forgot-password">
               <p style={{ textAlign: "right", margin: ".8rem 0" }}>
                 Forgot Password?
@@ -256,44 +240,6 @@ export default function Auth() {
             </Link> */}
 
             {authState === "login" && <br />}
-
-            {authState === "register" && (
-              <div
-                className={styles.avatar}
-                onClick={() => avatarRef.current.click()}
-              >
-                {avatarPreview ? (
-                  <>
-                    <img src={avatarPreview} alt="avatar" />
-                    <div style={{ cursor: "pointer" }}>Change Picture</div>
-                    <input
-                      type="file"
-                      onChange={(e) => handleImageChange(e)}
-                      accept="image/*"
-                      className={styles["avatar__upload"]}
-                      ref={avatarRef}
-                      name="avatar"
-                      id="avatar"
-                    />
-                  </>
-                ) : (
-                  <>
-                    <FcAddImage />
-                    <p>Add a profile picture</p>
-                    <input
-                      type="file"
-                      onChange={(e) => handleImageChange(e)}
-                      accept="image/*"
-                      className={styles["avatar__upload"]}
-                      ref={avatarRef}
-                      name="avatar"
-                      id="avatar"
-                      data-testid="avatar-input"
-                    />
-                  </>
-                )}
-              </div>
-            )}
 
             {loading ? (
               <button type="button" disabled>
