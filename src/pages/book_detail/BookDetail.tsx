@@ -151,7 +151,7 @@ export default function BookDetail() {
 
   const buyBook = () => {
     if (!currentUser) {
-      errorToast("Please login to purchase book");
+      errorToast("Please login to purchase a book");
       dispatch(SAVE_URL(pathname));
       navigate("/auth");
       return;
