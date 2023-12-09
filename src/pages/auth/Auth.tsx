@@ -18,6 +18,7 @@ import {
 import toast from "react-hot-toast";
 import { httpRequest } from "../../services/httpRequest";
 import { errorToast, successToast } from "../../utils/alerts";
+import { validateEmail } from "../../helpers";
 
 const initialState = {
   username: "",
@@ -55,7 +56,7 @@ export default function Auth() {
     if (!values.emailOrUsername || !values.password)
       return errorToast("Please provide your Email or Username and Password");
 
-    if (!/^[A-Za-z0-9\s]+$/.test(values.emailOrUsername)) {
+    if (!/^[A-Za-z0-9@\s._-]+$/.test(values.emailOrUsername)) {
       return errorToast("Your username or email contains unwanted characters");
     }
 
@@ -92,17 +93,17 @@ export default function Auth() {
     if (!values.username || !values.password || !values.email)
       return errorToast("Username, Email and Password are ALL required.");
 
-    if (values.username.length < 5) {
+    if (values.username.length < 5)
       return errorToast("Username should have a minimum of 5 characters.");
-    }
 
-    if (values.username && !/^[A-Za-z0-9\s]+$/.test(values.username)) {
+    if (values.username && !/^[A-Za-z0-9\s]+$/.test(values.username))
       return errorToast("Your username contains unwanted characters");
-    }
 
-    if (values.password.length < 6) {
+    if (!validateEmail(values.email))
+      return errorToast("Please enter a valid email format");
+
+    if (values.password.length < 6)
       return errorToast("Password should be at least 6 characters");
-    }
 
     setLoading(true);
 
