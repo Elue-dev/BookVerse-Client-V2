@@ -10,6 +10,7 @@
     background: transparent;
     border: 1px solid rgb(118, 118, 118);
     border-radius: 0.2rem;
+    margin-bottom: 0.5rem;
 
     @include mQ(600px) {
       flex-direction: column;
@@ -17,6 +18,10 @@
       gap: 0.5rem;
       padding: 1rem;
     }
+  }
+
+  .disclaimer {
+    text-align: center;
   }
 
   a {

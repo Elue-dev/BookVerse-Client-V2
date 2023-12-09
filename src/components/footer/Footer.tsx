@@ -17,6 +17,10 @@ export default function Footer() {
         </p>
         <p>&copy; {new Date().getFullYear()}. All Rights Reserved.</p>
       </div>
+      <p className={styles.disclaimer}>
+        <b>DISCLAIMER:</b> We do not actually sell any of these books, this is
+        just a side project to practice.
+      </p>
     </footer>
   );
 }
