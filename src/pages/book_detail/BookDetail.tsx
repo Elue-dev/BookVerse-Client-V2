@@ -272,7 +272,7 @@ export default function BookDetail() {
             <PostContent content={book?.description} />
           </article>
 
-          {tLoading ? (
+          {tLoading && currentUser != null ? (
             <div className="loading">
               <InfinitySpin width="200" color="#4fa94d" />
               <h3>GETTING TRANSACTIONS...</h3>
