@@ -249,11 +249,11 @@ export default function Auth() {
               </div>
             </label>
 
-            <Link to="/auth/forgot-password">
+            {/* <Link to="/auth/forgot-password">
               <p style={{ textAlign: "right", margin: ".8rem 0" }}>
                 Forgot Password?
               </p>
-            </Link>
+            </Link> */}
 
             {authState === "login" && <br />}
 
